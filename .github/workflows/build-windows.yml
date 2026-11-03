@@ -1,0 +1,55 @@
+name: Build Windows (Vietnamese)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feat/vietnamese-i18n
+      - main
+
+jobs:
+  build:
+    name: Build Windows x64 Portable
+    runs-on: windows-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Checkout craft-fonts
+        uses: actions/checkout@v4
+        with:
+          repository: storytold/craft-fonts
+          ref: b076417b5880bd4154bd22f00695b1d28c6bea83
+          path: craft-fonts
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Install WiX v5
+        run: |
+          dotnet tool install --global wix --version 5.0.2
+          wix extension add -g WixToolset.UI.wixext/5.0.2 WixToolset.Util.wixext/5.0.2
+
+      - name: Run i18n checks
+        run: |
+          $env:CRAFT_FONTS_DIR = (Resolve-Path "craft-fonts").Path
+          cargo test -p craft-anything-ui-egui -- i18n
+          cargo run -p xtask -- i18n-coverage
+
+      - name: Package Windows
+        run: |
+          $env:CRAFT_FONTS_DIR = (Resolve-Path "craft-fonts").Path
+          pwsh packaging/windows/package.ps1 -Arch x64
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: craft-anything-windows-x64-vietnamese
+          path: |
+            dist/release/craft-anything-*-windows-x64-portable.zip
+            dist/release/craft-anything-*-windows-x64.msi
+          if-no-files-found: error

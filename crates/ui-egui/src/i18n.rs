@@ -24,6 +24,7 @@ pub static LANGUAGES: &[LangInfo] = &[
     LangInfo { code: "ja", name: "日本語", source: include_str!("ja.tsv") },
     LangInfo { code: "zh-hans", name: "简体中文", source: include_str!("i18n/zh-hans.tsv") },
     LangInfo { code: "zh-hant", name: "繁體中文", source: include_str!("i18n/zh-hant.tsv") },
+    LangInfo { code: "vi", name: "Tiếng Việt", source: include_str!("i18n/vi.tsv") },
 ];
 
 /// Match a locale to a registered UI language. An explicit script wins over the region.
@@ -137,6 +138,7 @@ mod tests {
         assert_eq!(language_from_tag("en-US"), Some("en"));
         assert_eq!(language_from_tag("ja-JP"), Some("ja"));
         assert_eq!(language_from_tag("fr-CA"), Some("fr"));
+        assert_eq!(language_from_tag("vi-VN"), Some("vi"));
         assert_eq!(language_from_tag("de-DE"), None);
         assert_eq!(preferred_language(["de-DE", "zh-HK", "en-US"]), "zh-hant");
         assert_eq!(preferred_language(["en-US", "zh-CN"]), "en");
